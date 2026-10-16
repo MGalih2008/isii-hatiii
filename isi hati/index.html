@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruangan Hati & Surat untuk Aisaa</title>
+
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Dancing+Script:wght@600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;0,800;1,400;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Canvas Confetti Engine -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #d90429;
+      --primary-pink: #ff4d6d;
+      --soft-pink: #ff758f;
+      --text-dark: #2b2d42;
+      --spotify-green: #1db954;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+      color: var(--text-dark);
+      position: relative;
+      background: #1a0f13;
+    }
+
+    /* ROOM BACKGROUND */
+    .room-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('ruangan.jpg');
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.8) contrast(1.05);
+      z-index: 1;
+      transition: filter 1s ease;
+    }
+
+    .room-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(255, 150, 130, 0.2) 0%, rgba(20, 10, 15, 0.7) 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* SPOTIFY MUSIC PLAYER WIDGET */
+    .spotify-widget {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      background: rgba(18, 18, 18, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      color: #fff;
+      max-width: 310px;
+    }
+
+    .album-art-wrapper {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .album-art {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #282828;
+      animation: spinVinyl 8s linear infinite;
+      animation-play-state: paused;
+    }
+
+    .spotify-widget.playing .album-art {
+      animation-play-state: running;
+    }
+
+    @keyframes spinVinyl {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .song-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-grow: 1;
+    }
+
+    .song-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .spotify-icon { color: var(--spotify-green); font-size: 13px; }
+
+    .song-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #fff;
+    }
+
+    .song-artist {
+      font-size: 0.72rem;
+      color: #b3b3b3;
+    }
+
+    .play-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--spotify-green);
+      border: none;
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      transition: transform 0.2s;
+    }
+
+    .play-btn:hover { transform: scale(1.1); }
+
+    /* STAGE 1: LIVING AVATAR & DIALOG */
+    .dialog-scene-container {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 480px;
+      width: 90%;
+      padding: 20px;
+      transition: all 0.8s ease;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      margin-bottom: 25px;
+      filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.4));
+      animation: floatBreath 3.5s ease-in-out infinite;
+    }
+
+    @keyframes floatBreath {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-10px) scale(1.03); }
+    }
+
+    .living-emoji {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 35% 35%, #ffea79 0%, #ffc107 70%, #ff9800 100%);
+      border-radius: 50%;
+      position: relative;
+      box-shadow: inset -4px -6px 12px rgba(0,0,0,0.15), inset 4px 6px 12px rgba(255,255,255,0.6);
+      transition: all 0.5s ease;
+    }
+
+    .emoji-eyes {
+      position: absolute;
+      top: 38%;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      padding: 0 28px;
+    }
+
+    .eye {
+      width: 15px;
+      height: 20px;
+      background: #2c1810;
+      border-radius: 50%;
+      position: relative;
+      transition: all 0.3s ease;
+      animation: blink 4s infinite;
+    }
+
+    @keyframes blink {
+      0%, 94%, 98%, 100% { transform: scaleY(1); }
+      96% { transform: scaleY(0.1); }
+    }
+
+    .eye::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 5px;
+      height: 5px;
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    .emoji-cheeks {
+      position: absolute;
+      top: 55%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+      opacity: 0.7;
+    }
+
+    .cheek {
+      width: 20px;
+      height: 12px;
+      background: #ff5252;
+      border-radius: 50%;
+      filter: blur(3px);
+    }
+
+    .emoji-mouth {
+      position: absolute;
+      bottom: 22%;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: all 0.3s ease;
+    }
+
+    .mouth-shy { width: 22px; height: 10px; border-bottom: 4px solid #2c1810; border-radius: 0 0 10px 10px; }
+    .mouth-pleading { width: 16px; height: 16px; background: #2c1810; border-radius: 50%; }
+    .mouth-happy { width: 28px; height: 14px; border-bottom: 4px solid #2c1810; border-radius: 0 0 16px 16px; }
+
+    .avatar-heart-badge {
+      position: absolute;
+      top: -10px;
+      right: -5px;
+      background: #ff3366;
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 4px 10px rgba(255, 51, 102, 0.4);
+      animation: popHeart 1.5s infinite alternate;
+    }
+
+    @keyframes popHeart {
+      0% { transform: scale(0.9) rotate(-10deg); }
+      100% { transform: scale(1.15) rotate(10deg); }
+    }
+
+    .dialog-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 28px 24px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      position: relative;
+    }
+
+    .dialog-text {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: var(--text-dark);
+      font-weight: 600;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.4s ease;
+    }
+
+    .next-btn {
+      margin-top: 18px;
+      background: linear-gradient(135deg, #ff758f 0%, #e63946 100%);
+      color: #fff;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(230, 57, 70, 0.35);
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .next-btn:hover { transform: translateY(-2px) scale(1.04); }
+
+    /* STAGE 2: PINK LOVE ENVELOPE */
+    .envelope-scene-container {
+      position: relative;
+      z-index: 10;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 90%;
+      max-width: 440px;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .envelope-scene-container.show {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .pink-envelope {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      background: #ffb5bd;
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      overflow: hidden;
+      border: 3px solid #ff758f;
+    }
+
+    .pink-envelope-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 220px solid transparent;
+      border-right: 220px solid transparent;
+      border-top: 150px solid #ffa3af;
+      transform-origin: top center;
+      transition: transform 0.8s ease;
+      z-index: 5;
+    }
+
+    .pink-envelope-pocket {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #ffccd5 0%, #ffb5bd 100%);
+      clip-path: polygon(0 0, 50% 40%, 100% 0, 100% 100%, 0 100%);
+      z-index: 4;
+    }
+
+    .pink-heart-seal {
+      position: absolute;
+      top: 125px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 55px;
+      height: 55px;
+      background: #e63946;
+      border-radius: 50%;
+      z-index: 7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 22px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+      border: 2px solid #fff;
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+
+    .open-envelope-btn {
+      margin-top: 25px;
+      background: #fff;
+      color: var(--primary);
+      border: none;
+      padding: 14px 35px;
+      border-radius: 50px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(217, 4, 41, 0.25);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .open-envelope-btn:hover { transform: scale(1.05); background: #fff0f3; }
+
+    /* STAGE 3: FLORAL FRAME PAPER BOOK (VERTIKAL MEMANJANG) */
+    .letter-book-container {
+      position: relative;
+      z-index: 20;
+      display: none;
+      width: 90%;
+      max-width: 540px;
+      height: 75vh;
+      max-height: 680px;
+      background: #fdfbf7;
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+      padding: 40px 35px;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 8px solid #c2d5bb;
+      background-image: radial-gradient(#e2d9c2 0.8px, transparent 0.8px);
+      background-size: 16px 16px;
+    }
+
+    .letter-book-container.show {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .letter-slide {
+      display: none;
+      flex-direction: column;
+      flex-grow: 1;
+      overflow-y: auto;
+      padding-right: 8px;
+      animation: fadeInSlide 0.6s ease forwards;
+    }
+
+    .letter-slide.active {
+      display: flex;
+    }
+
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #b7094c;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .slide-text {
+      font-size: 1.02rem;
+      line-height: 1.85;
+      color: #333;
+      text-align: justify;
+      text-indent: 26px;
+      margin-bottom: 15px;
+    }
+
+    .highlight-text {
+      background: rgba(255, 182, 193, 0.45);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .book-navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px dashed #d5cbb5;
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      background: #b7094c;
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 25px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(183, 9, 76, 0.25);
+    }
+
+    .nav-btn:hover { background: #890337; transform: translateY(-2px); }
+    .nav-btn:disabled { background: #d3d3d3; cursor: not-allowed; box-shadow: none; transform: none; }
+
+    .slide-indicator {
+      font-family: 'Caveat', cursive;
+      font-size: 1.25rem;
+      color: #666;
+    }
+
+    @media (max-width: 600px) {
+      .letter-book-container { height: 78vh; padding: 30px 20px; }
+      .slide-title { font-size: 1.5rem; }
+      .spotify-widget { top: 12px; right: 12px; left: 12px; max-width: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Room Background Lokal -->
+  <div class="room-bg"></div>
+  <div class="room-overlay"></div>
+
+  <!-- SPOTIFY MUSIC PLAYER WIDGET -->
+  <!-- SPOTIFY MUSIC PLAYER WIDGET -->
+  <div class="spotify-widget" id="spotify-widget">
+    <div class="album-art-wrapper">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="Spotify Logo" class="album-art" id="album-art" style="background: #000; padding: 8px;">
+    </div>
+    <div class="song-info">
+      <div class="song-title-row">
+        <i class="fa-brands fa-spotify spotify-icon"></i>
+        <span class="song-title">Ungkapan</span>
+      </div>
+      <span class="song-artist">Musik Latar</span>
+    </div>
+    <div class="player-controls">
+      <button class="play-btn" id="play-btn" onclick="toggleAudio()">
+        <i class="fa-solid fa-play" id="play-icon"></i>
+      </button>
+    </div>
+    <audio id="bg-music" loop preload="auto">
+      <source src="lagu.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <!-- STAGE 1: DIALOG DENGAN KARAKTER HIDUP -->
+  <div class="dialog-scene-container" id="dialog-scene">
+    <div class="avatar-wrapper">
+      <div class="avatar-heart-badge"><i class="fa-solid fa-heart"></i></div>
+      <div class="living-emoji">
+        <div class="emoji-eyes">
+          <div class="eye" id="eye-left"></div>
+          <div class="eye" id="eye-right"></div>
+        </div>
+        <div class="emoji-cheeks">
+          <div class="cheek"></div>
+          <div class="cheek"></div>
+        </div>
+        <div class="emoji-mouth mouth-shy" id="emoji-mouth"></div>
+      </div>
+    </div>
+
+    <div class="dialog-card">
+      <div class="dialog-text" id="dialog-text">
+        Haiii aisaa kamu sekarang berada di tempat ruangan terdalam yakni hati seseorang yang perlu kamu tauu...
+      </div>
+      <button class="next-btn" onclick="nextDialog()">
+        <span>Lanjutkan</span>
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- STAGE 2: AMPLOP PINK -->
+  <div class="envelope-scene-container" id="envelope-scene">
+    <div class="pink-envelope">
+      <div class="pink-envelope-flap" id="pink-flap"></div>
+      <div class="pink-envelope-pocket"></div>
+      <div class="pink-heart-seal" id="pink-seal"><i class="fa-solid fa-heart"></i></div>
+    </div>
+    <button class="open-envelope-btn" onclick="openPinkEnvelope()">
+      <i class="fa-solid fa-envelope-open-text"></i>
+      <span>Buka Surat</span>
+    </button>
+  </div>
+
+  <!-- STAGE 3: BUKU SURAT ESTETIK BERBINGKAI BUNGA (4 SLIDE) -->
+  <div class="letter-book-container" id="letter-book">
+    
+    <!-- Slide 1 -->
+    <div class="letter-slide active" id="slide-0">
+      <h2 class="slide-title">Isi Hati</h2>
+      <p class="slide-text">
+        Cerita bermula dari <span class="highlight-text">kelas 10</span> waktu itu aku pertama kali melihat dirimu…, memang dulu kita tidak saling mengenal-satu sama lainn tapiii entah hal apa yang buat aku tiba-tiba muncul sebuah rasa yang tidak biasa terhadap dirimuuu.., dan duluuu pun aku sering curii pandang terhadap dirimuu tapi kenapa aku merasa tidak bisa mengatakannya secara langsung denganmu, karena waktu itu aku takut perasaan suka yang ada di hati ini hanyala cuman nafsu semata bukan dari hatikuu…
+      </p>
+      <p class="slide-text">
+        sampai akhirnya aku memutuskan untuk suka kamu secara diiammm.., bertepatan dengan waktu yang terus berjalan ada perempuan yang ingin dekat sama akuu tapi waktu ituu aku bingung saa akuu rasaa aku ingin nunggu perasaan ini yang pastii buat <b>dirimuu(aisaa)</b>., karena aku ingin menunggu dan mengetahui jawabannya terlebih dahuluu .., sampai akhirnya perempuan yang ingin dekat denganku ini mengatakan isi hatinya secara jujur tapii waktu ituu rasa menungguku sangatt besarr akhirnya yaa aku jawab ajj kitaa focus sekolah aj dulu.. padahal waktu itu aku mau bicara kalo ada seorang yang aku tunggu, tapii karena aku tetap megang komitmen pertamaku kalau aku akan suka sama kamu secara diam diam aj, bahkan temanku waktu itu tanya siapa cewek yang aku suka yaa aku jawab tapi gaa secara jujur disini adaa hall lucunya akuu jawab ga adaa tapi pasti temenkuu ga percayaa jd aku makek orang lain yang buat yakinno temenku dann ikuupun sampe percayaa bahkann waktuu itu pass orang ikii punya cowoo akuu di sabar sabarin sama temenkuu padahall dalam hatiku bukan dia tujuanku……
+      </p>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="letter-slide" id="slide-1">
+      <h2 class="slide-title">Perjalanan Waktu</h2>
+      <p class="slide-text">
+        Sebelum masuk ke kelas sebelas aku ada di fase bingung maksa ungkapin apa lebih baik engga karena dari aku sendiirii ga gampangg sukaa sama cewekk tapi karena ternyata kamu waktu itu udah ada cowo yaudah aku kyknya lebih baik diamm aj, yaa awalnya aku ikhlas ae gituu karna memang aku orang yang gampang untuk menerima yang memang bukan untukku…..
+      </p>
+      <p class="slide-text">
+        setelah hari hari yang telah di lalui sampai akhirnya aku naik ke kelasss sebelass dan hall yang gaa nyangka ternyata kitaa sekelass dongg aku awalnya kagett dan yaa diemm aja dulu walaupun masih menyimpan perasaan ke kamuu ,tapi aku masih tetapp ingin menunggu sampai aku tau kalau rasaaa ini beneran datang dari hatiiku walaupun ada jarakk dan jarang komunikasi jugaa tapi aku tetap ada merhatiin kamu dikit dikit hehehe…
+      </p>
+      <p class="slide-text">
+        hingga satu tahun kitaa sekelass sampai naik ke kelas dua belas ituu awal aku paham kalo perasaan ini muncul bener bener dari hatikuuu.., sampai akhirnya aku ada di fase ingin menjadi lelaki yang gentle yang berani ungkapin aja isi dari hatiku ke kamuuu…, makannya waktu itu aku ngajak kamu keluar cuman berdua aja soallnya ini yang ingin aku bicarakan sama kamuu biarr rassa ini gaa mengganjal di hati sama fikiranku biar bener-bener loss aja gitu. tapi karena kamu kayaknya keberatan kalo aku ajak keluar berdua jadinya yaa aku tulis aj buat seperti pesan.., makadari ituu saaa <b>aku butuh jawaban yang bener bener jujur darimuu jangan menggunakan empati kalo kamu suka atau engga kataakann aj secaraa jujur benr bener darii hatiimuu….</b>
+      </p>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="letter-slide" id="slide-2">
+      <h2 class="slide-title">Pilihan & Keputusan</h2>
+      <p class="slide-text">
+        Aku gaa mempermasalahkan kaloo kamu nolak karena yang aku katakan kitaa berhak menerima atau menolak sesorang yang suka sama kitaa karena dari pada di paksakan akan hanya menimbulkan sakit yang di rasakan sama keduannya jadii kaloo kamu tolakk aku yaaa aaku aakann mundur pelan-pelann/secara perlahan <i>(“karena titik puncak mencintai seseorang adalah merelakan/meikhlaskanya jika memang bukan kita pilihannya”)</i>….
+      </p>
+      <p class="slide-text">
+        tapi kalau kamu nerima yaaa aku cuman bisa buktikan kalo aku sayang sama seorang aku akan focus sama arah dan tujuan hidupku untuk kedepannya mungkinn waktu dan Batasan jarakk adalahh musuh terbesarku tapii memang inilah caraku untuk menunjukan rasaa sayang ke orang yang ku sukaa ,saat aku udah punya penghasilan sendiri baruu aku fokuss kekamuu…, tapi walaupun saat berproses tetap kita harus ada komunikasi yang baik dan mungkinn bertemu cuman aku gaa menjajikan bisaa tertalu serinng untuk bertemu..,kamuu juga pasti mempunyai tujuan dan kesibukan juga karena di umur segini sudah bukan masa untuk bermain lagi tapii membangun untuk kedepannya saaa karena akuu orang yang seriuss untuk hall masa depann…
+      </p>
+      <p class="slide-text">
+        Kalau kamu bertanyaa <b>“apa yang aku suka darimuu??”</b> bukan karena kamu yang sempurna,hebat,baik sabar itu bukan jawaban menurutku karna itu sama seperti menuntut seseorang saaa andai nanti ada yang berubah atau berbeda dengan yang di katakana apa bisa dikatakan orang itu masih sukaa?? Kalo dari aku sendiri aku suka kamuu karena aku bisa menerima kelebihan dan kekuranganmu…sama seperti kalo cinta orangnya maka cintai jugaa sifatnya…,
+      </p>
+    </div>
+
+    <!-- Slide 4 -->
+    <div class="letter-slide" id="slide-3">
+      <h2 class="slide-title">Catatan Terakhir</h2>
+      <p class="slide-text">
+        udah yaa gituu aja kamu ga perlu baless lewat chat itu ada macam-macam snack yang tadi aku kasih,.. untuk jawabannya di dalam kotak itu ada coklat… tapi kamu cukup ambil satu coklat aj kamu pilih salah satu aja nanti yang buat kamu kasih jawabannya, untuk coklat yang satunya tidak berlaku nanti peraturannya kalo kamu ,<b>Nerima</b> (makan coklatnya terus kembalikan ke aku dalam keadaan habis atau sisa bungkusnya) / <b>Nolak</b> (kamu kembalikan ke aku coklatnya dalam keadaan utuh)
+      </p>
+      <p class="slide-text">
+        setelahh iinii tenang hatikuu udah bisa ungkapin aj ga ada yang mengganjal di hati… buat kamu(aisaa) tetap tumbuh hebat dan penuh semangat kalo Lelah ada Allah yang siap menerima sandaran tanpa melihat statusnya. aku tidak tahu hati siapa yang sedang kamu sembunyikan yang terpenting siapapun ituu semogaa diaa bisa menjagamu dengann baik…, maaf yaa kalo mungkinn aku sudah terlalu mengganggu kehidupanmu selama ini dan mungkin kalo masih kurang peduli itu karna akuu takut kaloo aku terlalu mengganggu waktumu karna sebenarnya yaa saa aku cuman mau ngasih kamu rasa yang aman dan nyaman ,ngasih kamu ruang waktu dengan bebas tanpa terlalu terikat dengan segala gangguan pesann yang aku kirim …
+      </p>
+      <p class="slide-text" style="text-align: center; font-weight: 700; color: #b7094c; margin-top: 15px;">
+        udaaah sampai sinii duluuyaa aku cuman bisa doakan kamu agar semua keinginanmu bisaa tercapai<br>
+        TERIMA KASIH UDAH MELUANGKAN WAKTUNYA DAN MEMBACA SAMPAI AKHIRR
+      </p>
+      <div style="margin-top: 20px; text-align: right; font-family: 'Dancing Script', cursive; font-size: 1.8rem; color: #b7094c;">
+        Byee From (Galih) ❤️
+      </div>
+    </div>
+
+    <!-- Tombol Navigasi Nyaman -->
+    <div class="book-navigation">
+      <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)" disabled>
+        <i class="fa-solid fa-arrow-left"></i> Sebelumnya
+      </button>
+      <span class="slide-indicator" id="slide-indicator">1 / 4</span>
+      <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">
+        Selanjutnya <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Audio Player Control
+    const bgMusic = document.getElementById('bg-music');
+    const playIcon = document.getElementById('play-icon');
+    const spotifyWidget = document.getElementById('spotify-widget');
+    let isPlaying = false;
+
+    function toggleAudio() {
+      if (isPlaying) {
+        bgMusic.pause();
+        playIcon.className = 'fa-solid fa-play';
+        spotifyWidget.classList.remove('playing');
+      } else {
+        bgMusic.play().then(() => {
+          playIcon.className = 'fa-solid fa-pause';
+          spotifyWidget.classList.add('playing');
+        }).catch(err => console.log("Audio play blocked:", err));
+      }
+      isPlaying = !isPlaying;
+    }
+
+    // Dialog & Expressions Sequence
+    const dialogues = [
+      {
+        text: "Haiii aisaa kamu sekarang berada di tempat ruangan terdalam yakni hati seseorang yang perlu kamu tauu...",
+        mouthClass: "mouth-shy",
+        eyeScaleY: "1"
+      },
+      {
+        text: "Minta waktunya sebentar yaaa...",
+        mouthClass: "mouth-pleading",
+        eyeScaleY: "0.8"
+      },
+      {
+        text: "Toloong di baca semuaa yaa...",
+        mouthClass: "mouth-happy",
+        eyeScaleY: "1"
+      }
+    ];
+
+    let currentStep = 0;
+    const dialogTextElem = document.getElementById('dialog-text');
+    const emojiMouthElem = document.getElementById('emoji-mouth');
+    const eyeLeft = document.getElementById('eye-left');
+    const eyeRight = document.getElementById('eye-right');
+
+    function nextDialog() {
+      currentStep++;
+      if (!isPlaying) toggleAudio();
+
+      if (currentStep < dialogues.length) {
+        dialogTextElem.style.opacity = '0';
+        setTimeout(() => {
+          const current = dialogues[currentStep];
+          dialogTextElem.innerText = current.text;
+          emojiMouthElem.className = `emoji-mouth ${current.mouthClass}`;
+          eyeLeft.style.transform = `scaleY(${current.eyeScaleY})`;
+          eyeRight.style.transform = `scaleY(${current.eyeScaleY})`;
+          dialogTextElem.style.opacity = '1';
+        }, 300);
+      } else {
+        const dialogScene = document.getElementById('dialog-scene');
+        dialogScene.style.opacity = '0';
+        dialogScene.style.transform = 'translateY(-20px)';
+
+        launchRomanticFireworks();
+
+        setTimeout(() => {
+          dialogScene.style.display = 'none';
+          const envScene = document.getElementById('envelope-scene');
+          envScene.classList.add('show');
+        }, 600);
+      }
+    }
+
+    // Buka Amplop Pink
+    function openPinkEnvelope() {
+      document.getElementById('pink-seal').style.opacity = '0';
+      document.getElementById('pink-flap').style.transform = 'rotateX(180deg)';
+
+      setTimeout(() => {
+        const envScene = document.getElementById('envelope-scene');
+        envScene.style.opacity = '0';
+        envScene.style.transform = 'scale(0.9)';
+
+        setTimeout(() => {
+          envScene.style.display = 'none';
+          const bookContainer = document.getElementById('letter-book');
+          bookContainer.classList.add('show');
+        }, 600);
+      }, 500);
+    }
+
+    // Navigasi Slide Buku Surat
+    let currentSlide = 0;
+    const totalSlides = 4;
+
+    function changeSlide(direction) {
+      const slides = document.querySelectorAll('.letter-slide');
+      slides[currentSlide].classList.remove('active');
+
+      currentSlide += direction;
+
+      if (currentSlide < 0) currentSlide = 0;
+      if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
+
+      slides[currentSlide].classList.add('active');
+      document.getElementById('slide-indicator').innerText = `${currentSlide + 1} / ${totalSlides}`;
+
+      document.getElementById('prev-btn').disabled = (currentSlide === 0);
+      document.getElementById('next-btn').disabled = (currentSlide === totalSlides - 1);
+    }
+
+    // Fireworks Explosion Engine
+    function launchRomanticFireworks() {
+      const count = 200;
+      const defaults = { origin: { y: 0.6 } };
+
+      function fire(particleRatio, opts) {
+        confetti(Object.assign({}, defaults, opts, {
+          particleCount: Math.floor(count * particleRatio)
+        }));
+      }
+
+      fire(0.25, { spread: 26, startVelocity: 55, colors: ['#ff758f', '#e63946', '#ffffff'] });
+      fire(0.2, { spread: 60, colors: ['#ffb3c1', '#d4af37'] });
+      fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+    }
+  </script>
+</body>
+</html>
